@@ -1,0 +1,170 @@
+Cucumber:
+BDD is Behaviour Driven Development is based on Test Driven Development TDD
+
+BDD Supported Tools:
+Cucumber - base code in Java/ruby/python
+Jbehave
+Nbehave
+Specflow - base code in C#
+
+Gherkin:
+Is the format for Cucumber specification
+Feature
+Background
+Scenario
+Given , When ,Then
+But , And
+Scenario Outline , Examples
+Scenario Templates
+
+Setting up IntelliJ:
+Set up the environment variables , Path values etc 
+Add the dependencies in the POM.xml
+Add the cucumber for Java plugin to IntelliJ
+
+Functionality.feature
+FunctionalitySteps.java
+Alt+ Enter 	to get the intellisense
+Ctrl+B 		to go to the declaration (step def from feature)
+Ctrl+Alt+L	to format the indentation/tables
+
+File Structure:
+src/main/test/feature/file.feature
+src/main/test/steps/fileStep.java
+In edit configuration on top right corner, give the details ;Glue: folder name of  step definitions
+
+DataTables:
+Multiple data can be passed through Data tables instead of hardcoding
+Feature Step:
+When I enter the login details
+     	| Username | Password      |
+      	| admin        | adminPassword |
+Implementation: Option 1:
+@When("^I enter the login details$")
+public void iEnterTheLoginDetails(DataTable table) {
+   //Initialise datatable
+   List<List<String>> data;
+   data = table.raw();
+   System.out.println(data.get(1).get(0));  // prints admin
+   System.out.println(data.get(1).get(1));  // prints adminPassword}
+
+Implementation: Option 2:
+Custom class via POJO (Plan Old Java Object)
+Create a POJO class named UserExt and then use it in the implementation like below.
+Convert the datatable a slist and assign to custList 
+Using for each loop, traverse through each element 
+@When("^I enter the login details$")
+public void iEnterTheLoginDetails(DataTable table) {
+  List<UserExt> custList = new ArrayList<UserExt>();
+  custList = table.asList(UserExt.class);
+   for (UserExt u:custList) {
+       System.out.println(u.getUsername());
+       System.out.println(u.getPassword());
+          }}
+
+ScenarioOutline:
+Feature step:
+Scenario Outline: Login using scenario outline
+ Given I navigate to the login page
+ When I enter <Username> and <Password>
+ And I enter the login button
+ Then I should see the userform page
+ Examples:
+   | Username | Password      |
+   | admin    | adminPassword |
+   | user2    | password2     |
+   | user3    | password3     |
+Implementation:
+@When("^I enter ([^\"]*) and ([^\"]*)$")
+public void iEnterUsernameAndPassword(String username,String password) {
+   System.out.println(username);
+   System.out.println(password);
+}
+
+Cucumber Hooks: 
+A Background is run before each scenario, but after any Before hooks. In your feature file, put the Background before the first Scenario
+Use Background when you provide customer-readable pre-conditions to your scenarios
+Use Before when you have to do some technical setup before your scenarios
+Create a separate class Hooks with tags and methods.
+@Before - before a scenario
+@After - teardown/after a scenario
+import cucumber.api.java.After;
+import cucumber.api.java.Before;
+ 
+public class Hooks {
+@Before
+    public void beforeScenario(){
+        System.out.println("This will run before the Scenario");
+    }
+@After
+    public void afterScenario(){
+        System.out.println("This will run after the Scenario");
+    }
+}
+
+An important thing to note about the after hook is that even in case of test fail, after hook will execute for sure.
+Method name can be anything, need not to be beforeScenario() or afterScenario(). can also be named as setUp() and tearDown().
+Make sure that the package import statement should be import cucumber.api.java.After; & import cucumber.api.java.Before;
+Dependency Injection using picocontainer in Cucumber:
+Add the picocontainer dependency to pom.xml (should be same version as cucumber-*)
+Create a Base class with a public variable myState
+extend Base class in other classes eg: Hooks , Login 
+ create a private object of Base class in other classes  eg: private Base base
+ create the constructors in each class after extending 
+Initialise obj.myState in one class eg: base.myState = “Firefox”;
+Access the value of obj.myState from another class. Eg: Syso(base.myState)
+ 
+Argument Transformation using Transformer class
+Extend Transformer<> class for the type to be transferred	
+Override transform method 
+Eg: to transform the email to admin@gmail.com
+
+Call @Transform annotation as parameter in calling method param
+ 
+How to run mavan test from command line:
+Mvn test
+Mvn test -Dcucumber.options=”- - tags @SmokeTest”
+Sample Base class
+With property file implementation having url and browser details
+How to implement driver with webDriverManager instead of Set property
+
+
+
+
+Element Locators :Points to note
+
+Waits:
+Implicit Wait -> Global one
+driver.manage().timeouts().implicitlyWait(5, TimeUnit.SECONDS);
+Explicit Wait -> only for a particular element 
+
+wait = new WebDriverWait(driver,6);
+wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("span.promoinfo")));
+
+
+Autosuggestive/Auto complete dropdown using Java Executor
+
+driver.findElement(By.id("autocomplete")).sendKeys("IND");
+Thread.sleep(2000);
+driver.findElement(By.id("autocomplete")).sendKeys(Keys.DOWN);
+JavascriptExecutor js = (JavascriptExecutor)driver;
+String script =  "return document.getElementById(\"autocomplete\").value;";
+String text= (String)js.executeScript(script);
+int i=0;
+while(!text.equalsIgnoreCase("INDIA")) {
+{
+driver.findElement(By.id("autocomplete")).sendKeys(Keys.DOWN);
+text= (String)js.executeScript(script);
+I++;
+if(i>10)
+{System.out.println("Element not found");}
+}
+driver.findElement(By.id("autocomplete")).sendKeys(Keys.ENTER);
+driver.close();
+
+
+To open a link in a separate tab
+
+String clickOnLink = Keys.chord(Keys.CONTROL,Keys.ENTER);
+driver.findElement(By.Tagname(“a”).sendKeys(clickOnLink);
+
